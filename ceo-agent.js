@@ -243,7 +243,7 @@ async function replyToMentions() {
 
 // Schedule Generic Tweets
 async function scheduleTweets() {
-  const tweetsPerDay = 1;
+  const tweetsPerDay = 2;
   const interval = (24 * 60 * 60 * 1000) / tweetsPerDay;
 
   console.log(`[LOG] Scheduling ${tweetsPerDay} tweets per day, interval: ${interval / 1000} seconds.`);
