@@ -206,6 +206,7 @@ async function replyToMentions() {
 
     for (const mention of recentMentions) {
       try {
+        console.log("[LOG] Generating Reply.");
         const reply = await openai.chat.completions.create({
           ...characterSettings,
           messages: [
@@ -219,6 +220,7 @@ async function replyToMentions() {
 
         const replyContent = `${reply.choices[0].message.content}`;
         if (mention.id) {
+          console.log(`[LOG] Replying to: ${tweetReply.data.id} text: "${mention.text}"`);
           const tweetReply = await twitterClient.v2.reply(replyContent, mention.id);
           console.log(`[LOG] Replied with ID: ${tweetReply.data.id} Content: "${replyContent}"`);
         } else {
@@ -255,8 +257,6 @@ async function startAgent() {
 
   // Schedule generic tweets
   scheduleTweets();
-
-  replyToMentions();
 
   // Background mention replies
   console.log("[LOG] Setting up mentions check every 20 minutes.");
