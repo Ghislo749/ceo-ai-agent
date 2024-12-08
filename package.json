@@ -12,7 +12,10 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-telegram-bot-api": "^0.66.0",
     "openai": "^4.76.0",
-    "twit": "^2.2.11"
+    "twit": "^2.2.11",
+    "twitter-api-v2": "^1.18.2"
   }
 }
