@@ -195,7 +195,6 @@ async function replyToMentions() {
     const mentionsResponse = await twitterClient.v2.userMentionTimeline(process.env.TWITTER_USER_ID, { max_results: 10, "tweet.fields": "created_at" });
     const mentions = mentionsResponse._realData.data || [];
 
-    console.log(mentions);
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
 
     const recentMentions = mentions.filter((mention) => {
@@ -207,28 +206,23 @@ async function replyToMentions() {
 
     for (const mention of recentMentions) {
       try {
-        const user = await twitterClient.v2.user(mention.author_id);
+        const reply = await openai.chat.completions.create({
+          ...characterSettings,
+          messages: [
+            ...characterSettings.messages,
+            {
+              role: "user",
+              content: `Reply to this tweet with personality: "${mention.text}". Keep the reply under ${MAX_TWEET_LENGTH} characters including the mention.`,
+            },
+          ],
+        });
 
-        if (user.data.followers_count >= 400 || user.data.verified) {
-          console.log(`[LOG] Replying to @${user.data.username}: "${mention.text}"`);
-          const reply = await openai.chat.completions.create({
-            ...characterSettings,
-            messages: [
-              ...characterSettings.messages,
-              {
-                role: "user",
-                content: `Reply to this tweet with personality: "${mention.text}". Keep the reply under ${MAX_TWEET_LENGTH} characters including the mention.`,
-              },
-            ],
-          });
-
-          const replyContent = `@${user.data.username} ${reply.choices[0].message.content}`;
-          if (mention.id) {
-            const tweetReply = await twitterClient.v2.reply(replyContent, mention.id);
-            console.log(`[LOG] Replied with ID: ${tweetReply.data.id} Content: "${replyContent}"`);
-          } else {
-            console.log("[LOG] Skipped reply due to invalid mention ID.");
-          }
+        const replyContent = `${reply.choices[0].message.content}`;
+        if (mention.id) {
+          const tweetReply = await twitterClient.v2.reply(replyContent, mention.id);
+          console.log(`[LOG] Replied with ID: ${tweetReply.data.id} Content: "${replyContent}"`);
+        } else {
+          console.log("[LOG] Skipped reply due to invalid mention ID.");
         }
       } catch (error) {
         if (!handleRateLimitError(error)) {
@@ -261,6 +255,8 @@ async function startAgent() {
 
   // Schedule generic tweets
   scheduleTweets();
+
+  replyToMentions();
 
   // Background mention replies
   console.log("[LOG] Setting up mentions check every 20 minutes.");
