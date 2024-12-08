@@ -86,7 +86,7 @@ const MAX_TWEET_LENGTH = 240;
 function handleRateLimitError(error) {
   if (error.code === 429) {
     const resetTime = new Date(error.rateLimit.reset * 1000);
-    console.log(`[LOG] Rate limit exceeded. Skipping action. Will reset at ${resetTime}.`);
+    console.log(`[LOG] Rate limit exceeded. Skipping action. Will reset at ${resetTime}.`, new Date(Date.now()));
     return true; // Indicate that we've handled the rate limit error by skipping
   }
   return false; // Not a rate limit error, rethrow the error
@@ -190,12 +190,12 @@ async function postTweet(content) {
 
 // Reply to Mentions with rate limit handling
 async function replyToMentions() {
-  console.log("[LOG] Checking for mentions...");
+  console.log("[LOG] Checking for mentions..." , new Date(Date.now()));
   try {
     const mentionsResponse = await twitterClient.v2.userMentionTimeline(process.env.TWITTER_USER_ID, { max_results: 10, "tweet.fields": "created_at" });
     const mentions = mentionsResponse._realData.data || [];
 
-    const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
+    const twentyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
 
     const recentMentions = mentions.filter((mention) => {
       const mentionTime = new Date(mention.created_at);
@@ -258,9 +258,11 @@ async function startAgent() {
   // Schedule generic tweets
   scheduleTweets();
 
+  replyToMentions();
+
   // Background mention replies
-  console.log("[LOG] Setting up mentions check every 20 minutes.");
-  setInterval(replyToMentions, 20 * 60 * 1000);
+  console.log("[LOG] Setting up mentions check every 30 minutes.");
+  setInterval(replyToMentions, 30 * 60 * 1000);
 }
 
 startAgent();
