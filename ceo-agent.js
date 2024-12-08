@@ -195,7 +195,7 @@ async function replyToMentions() {
     const mentionsResponse = await twitterClient.v2.userMentionTimeline(process.env.TWITTER_USER_ID, { max_results: 10, "tweet.fields": "created_at" });
     const mentions = mentionsResponse._realData.data || [];
 
-    const twentyMinutesAgo = new Date(Date.now() - 720 * 60 * 1000);
+    const twentyMinutesAgo = new Date(Date.now() - 60 * 60 * 1000);
 
     const recentMentions = mentions.filter((mention) => {
       const mentionTime = new Date(mention.created_at);
@@ -253,8 +253,8 @@ async function scheduleTweets() {
 
 // Schedule Generic Tweets
 async function scheduleReplies() {
-  console.log("[LOG] Setting up mentions check every 720 minutes.");
-  setInterval(async () => { await replyToMentions(); }, 720 * 60 * 1000);
+  console.log("[LOG] Setting up mentions check every 60 minutes.");
+  setInterval(async () => { await replyToMentions(); }, 60 * 60 * 1000);
 }
 
 // Start the agent with console input for tweet generation
